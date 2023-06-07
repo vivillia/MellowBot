@@ -1,0 +1,25 @@
+name: test and deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-docker-image:
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v2
+
+      - name: build docker image
+        run: docker build -t ${{secrets.DOCKER_USERNAME}}/mellowbot .
+
+      - name: log into docker and upload image
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run:  |
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          docker push ${{ secrets.DOCKER_USERNAME }}/mellowbot
